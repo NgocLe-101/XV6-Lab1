@@ -35,7 +35,7 @@ void find(char* path, char* filename) {
       printf("find: path too long\n");
       break;
     }
-    // Copy the path to the buffer and add "/" at the end of the path showing we are traversal inside of the folder at "path"
+    // Copy the path to the buffer and add "/" at the end of the path showing we are traversal inside the folder at "path"
     strcpy(buf, path);
     p = buf+strlen(buf);
     *p++ = '/';
