@@ -3,51 +3,63 @@
 #include "kernel/stat.h"
 #include "user/user.h"
 
-void primes(int valueLeft)__attribute__((noreturn));
+void primes(int valueLeft[2])__attribute__((noreturn));
 
-void primes(int valueLeft){
+void primes(int valueLeft[2]){
     int res = 0;
-    if (read(valueLeft, &res, 4) != 0){
+    if (read(valueLeft[0], &res, 4) > 0){ // is prime
         printf("prime %d\n", res);
-    } else{
+    } else{ // end || error
+        close(valueLeft[0]); 
         exit(0);
     }
 
     int pp[2];
     pipe(pp);
-    int value = 0;
-    while (read(valueLeft, &value, 4) != 0) {
-        if (value % res != 0) {
-            write(pp[1], &value, 4);
-        }
-    }
-    close(pp[1]);
     
-    if (fork() == 0)
-        primes(pp[0]);
-    close(pp[0]);
+    if (fork() == 0) { // child 
+        close(pp[1]);
+        close(valueLeft[0]);
+        primes(pp);
+    }
+    else { // parent
+        close(pp[0]);
 
-    wait(0);
-    exit(0);
+        int valueTemp = 0;
+        while (read(valueLeft[0], &valueTemp, 4) != 0) { // read all
+            if (valueTemp % res != 0) { // check
+                write(pp[1], &valueTemp, 4); 
+            }
+        }
+
+        close(pp[1]);
+        wait(0);
+        exit(0);
+    }
 }
 
 
 int
-main(void)
+main(int argc, char* argv[])
 {
     int p[2];
     pipe(p);
-
-    int i=2;
-    while (i<=40){ // From 41: full
-        write(p[1], &i, 4);
-        i++;
-    }
-    close(p[1]);
-    if (fork() == 0)
-        primes(p[0]);
-    close(p[0]);
     
-    wait(0);
-    exit(0);
+    if (fork() == 0) { //  child
+        close(p[1]);
+        primes(p);
+    }
+    else {
+        close(p[0]);
+
+        int i=2;
+        while (i<=280){ // parent
+            write(p[1], &i, 4);
+            i++;
+        }
+
+        close(p[1]);
+        wait(0);
+        exit(0);
+    }
 }
