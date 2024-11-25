@@ -36,7 +36,7 @@ strcmp(const char *p, const char *q)
 uint
 strlen(const char *s)
 {
-  uint n;
+  int n;
 
   for(n = 0; s[n]; n++)
     ;
