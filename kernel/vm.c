@@ -488,9 +488,31 @@ copyinstr(pagetable_t pagetable, char *dst, uint64 srcva, uint64 max)
 
 
 #ifdef LAB_PGTBL
+void _vmprint(pagetable_t pagetable, int level) {
+  for (int i=0; i<512; i++) {
+    pte_t pte = pagetable[i];
+
+    if(pte & PTE_V) {
+      uint64 pa = PTE2PA(pte);
+      // print prefix ..
+      for (int j = 0; j < level; j++)
+        printf(".. ");
+
+      printf("%d: pte %p pa %p", i, (void*)pte, (void*)pa);
+            printf("\n");
+
+      // if not leaf, print next level
+      if ((pte&(PTE_R|PTE_W|PTE_X)) == 0)
+        _vmprint((pagetable_t)pa, level+1);
+    }
+  }
+}
+
+
 void
 vmprint(pagetable_t pagetable) {
-  // your code here
+  printf("page table %p\n", pagetable);
+  _vmprint(pagetable, 0);
 }
 #endif
 
